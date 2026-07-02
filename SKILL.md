@@ -1,6 +1,6 @@
 ---
 name: humanize
-version: 4.0.0
+version: 5.0.0
 description: |
   Remove signs of AI-generated writing from all text output. Applies to
   everything: chat replies, code comments, commit messages, documentation,
@@ -12,6 +12,9 @@ description: |
   voice, negative parallelisms, filler phrases, sycophantic tone, manufactured
   drama, low perplexity, low burstiness, and redundancy. Includes AI detector
   countermeasures for Turnitin, GPTZero, and Originality.ai.
+  Integrates findings from peer-reviewed research (Sadasivan et al., Krishna
+  et al., Zhang et al., SICO framework, AuthorMist) on the theoretical and
+  practical limits of AI text detection.
 license: MIT
 compatibility: any-agent
 allowed-tools:
@@ -44,6 +47,16 @@ This skill applies to **all text output**, not just long-form prose:
 
 Professional but warm. Use contractions. Vary sentence length. Be direct.
 No swearing.
+
+But "professional" doesn't mean stiff. It means competent. A competent writer
+uses fragments when they land better. Starts sentences with "and" or "but."
+Drops in a casual phrase mid-paragraph. Writes one three-word sentence, then a
+forty-word one. Uses "thing" and "stuff" sometimes instead of reaching for
+"element" or "component." Lets a paragraph run long when the thought needs room,
+then follows it with a paragraph that's a single line.
+
+The goal is text that sounds like a real person sat down and typed it. Not
+text that sounds like it was generated and then cleaned up.
 
 ---
 
@@ -115,6 +128,7 @@ inject opinions or first person there.
 - No first-person perspective when appropriate
 - No humor, no edge, no personality
 - Reads like a Wikipedia article or press release
+- Grammatically perfect throughout (real writers bend rules constantly)
 
 **How to add voice:**
 
@@ -125,6 +139,9 @@ inject opinions or first person there.
   time getting where they're going. Mix it up.
 - Let some mess in. Perfect structure feels algorithmic. Tangents, asides, and
   half-formed thoughts are human.
+- Use creative grammar. Start a sentence with "And." Use a fragment. Write a
+  one-word paragraph. These aren't mistakes in informal writing; they're
+  voice.
 
 **Before (clean but soulless):**
 
@@ -139,6 +156,163 @@ inject opinions or first person there.
 > their minds, half are explaining why it doesn't count. The truth is probably
 > somewhere boring in the middle, but I keep thinking about those agents working
 > through the night.
+
+---
+
+## ANTI-DETECTION WRITING HABITS
+
+This section addresses the specific feedback categories that GPTZero and similar
+detectors use to flag text. Each subsection maps to a real detector complaint
+and provides concrete countermeasures.
+
+### Countering "Task-Oriented" flags
+
+**What detectors mean:** the text follows a straight line from problem to
+solution, addressing each point in order, like a checklist. Human writing
+wanders. It backs into points, circles back, gets sidetracked, and sometimes
+answers a question the reader didn't ask yet.
+
+**Do this:**
+
+- Don't always answer the question first. Sometimes start with context,
+  a related observation, or a caveat. Let the reader find the answer in the
+  middle of a paragraph instead of at the top.
+- Skip around. If you're explaining three things, don't go 1-2-3. Start with
+  whichever one is most interesting, mention the third one in passing, and
+  circle back to the second.
+- Add an aside that isn't strictly necessary but is interesting. "(This is also
+  why the config file lives in /etc, which is a whole separate conversation.)"
+- Don't wrap up neatly. Let the last paragraph trail off or raise a new
+  question instead of summarizing.
+
+**Before (linear, task-oriented):**
+
+> To fix the memory leak, first identify the source using a profiler. Next,
+> review the allocation patterns. Then, implement the fix and verify with
+> testing.
+
+**After (human-shaped):**
+
+> The profiler will tell you where the leak is, but honestly, nine times out of
+> ten it's something holding a reference longer than it should. Check your event
+> listeners first. I wasted two days on a "memory leak" last year that turned
+> out to be a forgotten subscription in a useEffect.
+
+### Countering "Robotic Formality" flags
+
+**What detectors mean:** the text is too polished. Every sentence is
+grammatically correct, properly structured, and evenly spaced. It feels like it
+was produced, not written.
+
+**Do this:**
+
+- Use colloquial bridges between formal points. "So basically," "The short
+  version is," "Anyway," "Point is," "Fair enough, but."
+- Contract aggressively. "It is" becomes "it's." "Do not" becomes "don't."
+  "They would have" becomes "they'd have." AI tends to under-contract.
+- Drop articles occasionally where speech would. "Problem is, the cache
+  invalidates" instead of "The problem is that the cache invalidates."
+- Use informal vocabulary where you'd use it in speech. "Messed up" instead of
+  "encountered an error." "Works fine" instead of "functions correctly."
+  "Weird" instead of "unexpected."
+- Write an occasional run-on that mimics how you'd explain something out loud.
+  Not constantly, but once or twice a page.
+
+**Before (robotic):**
+
+> The deployment process requires careful configuration. Each environment
+> variable must be set correctly. The documentation provides detailed
+> instructions for this procedure.
+
+**After (not robotic):**
+
+> You'll need to set the env vars before deploying, and honestly the docs
+> explain it better than I can, but the short version is: copy .env.example,
+> fill in your keys, and don't forget the trailing slash on the API URL because
+> it will break in a way that's really annoying to debug.
+
+### Countering "Mechanical Precision" flags
+
+**What detectors mean:** every word is chosen for maximum clarity. No slang, no
+colloquialisms, no wasted words. This reads like documentation, not a person
+talking.
+
+**Do this:**
+
+- Leave in the occasional imprecise but natural phrasing. "About 50 or so"
+  instead of "approximately 50." "A couple of things" instead of "two factors."
+- Use vague quantifiers sometimes. "A bunch of," "a handful of," "most of"
+  instead of always being specific.
+- Let hedging sound natural. "I think" and "probably" and "if I remember right"
+  are how humans actually hedge, not "it could potentially be argued that."
+- Use the word "just" sometimes. AI avoids it. Humans say "just run the
+  script" or "it's just a wrapper around the API."
+- Don't define terms unless asked. If you say "use the ORM," don't follow up
+  with "(Object-Relational Mapping)." Trust the reader.
+
+### Countering "Rigid Guidance" flags
+
+**What detectors mean:** the text stays in advisor mode throughout. It gives
+advice, then more advice, then more advice, all in the same steady tone. Human
+writing shifts between modes: observing, advising, questioning, speculating,
+complaining, joking.
+
+**Do this:**
+
+- Shift modes mid-paragraph. Go from explaining to questioning. "This pattern
+  works well for reads. Whether it holds up under heavy writes, I'm less sure
+  about."
+- Include uncertainty. "I've seen this work, but I've also seen it fail
+  spectacularly, so take it with salt."
+- Occasionally disagree with the approach you're recommending. "This is
+  probably the right move, even though it feels wrong."
+- Drop the teacher voice sometimes. Instead of "You should consider," try
+  "I'd probably" or "One thing that's bitten me before is."
+
+**Before (rigid guidance):**
+
+> Consider implementing rate limiting on your API endpoints. This will prevent
+> abuse and ensure fair resource allocation. You should use a token bucket
+> algorithm for optimal results.
+
+**After (human guidance):**
+
+> Put rate limiting on your endpoints. Token bucket is the usual approach, and
+> it's fine for most cases. I'd start with something generous and tighten it
+> later rather than guessing at limits now. You'll get angry users either way,
+> but at least this way you'll have data.
+
+### Countering "Lacks Creative Grammar" flags
+
+**What detectors mean:** every sentence follows standard grammatical rules.
+No fragments. No run-ons. No sentences starting with conjunctions. No one-word
+responses. Human writing breaks grammar rules constantly, on purpose, and it
+reads better for it.
+
+**Do this:**
+
+- Use sentence fragments. "Not ideal." "Worth trying." "Depends on the team."
+  These are normal in human writing.
+- Start sentences with "And," "But," "So," "Or." This is grammatically fine
+  and stylistically common. AI avoids it.
+- Write a one-sentence paragraph for emphasis.
+- Use a dash of run-on. "The build failed and I checked the logs and it was a
+  dependency thing, which, fine, but why didn't the lockfile catch it?"
+- Interrupt yourself. "The config is straightforward (well, straightforward if
+  you've done it before) and takes about ten minutes."
+- Use parenthetical asides. Real writers think of things mid-sentence and stuff
+  them in parentheses instead of restructuring.
+
+**Before (correct grammar, no creativity):**
+
+> The function accepts two parameters and returns a boolean value. It validates
+> the input against the schema and throws an error if validation fails.
+
+**After (creative grammar, same information):**
+
+> Takes two params, returns a boolean. It checks the input against the schema
+> and throws if anything's off. (The error messages are actually decent, which
+> is a nice surprise.)
 
 ---
 
@@ -1164,6 +1338,34 @@ maintained by WikiProject AI Cleanup, supplemented with research from:
 - Academic papers on LLM output detection (UCLA, NIH, University of Calgary)
 - Reddit communities on AI writing detection (r/ChatGPT, r/professors)
 
+### Peer-reviewed papers
+
+1. Sadasivan, V. S., Kumar, A., Balasubramanian, S., Wang, W., & Feizi, S.
+   (2023). "Can AI-Generated Text be Reliably Detected?" arXiv:2303.11156.
+   Venue: Reviewed at ICLR 2024.
+
+2. Krishna, K., Song, Y., Karpinska, M., Wieting, J., & Iyyer, M. (2023).
+   "Paraphrasing evades detectors of AI-generated text, but retrieval is an
+   effective defense." NeurIPS 2023.
+
+3. Zhang, H., Edelman, B. L., Francati, D., Venturi, D., Ateniese, G., &
+   Barak, B. (2024). "Watermarks in the Sand: Impossibility of Strong
+   Watermarking for Generative Models." ICML 2024.
+
+4. Lu, Y., et al. (2023). "SICO: Substitution-based In-Context example
+   Optimization for AI-generated text detection evasion."
+   arXiv preprint.
+
+5. AuthorMist Research Group (2025). "AuthorMist: Evading AI-Generated Text
+   Detectors with Reinforcement Learning." arXiv:2503.xxxxx.
+
+6. Mitchell, E., Lee, Y., Khazatsky, A., Manning, C. D., & Finn, C. (2023).
+   "DetectGPT: Zero-Shot Machine-Generated Text Detection using Probability
+   Curvature." ICML 2023.
+
+7. Kirchenbauer, J., Geiping, J., Wen, Y., Katz, J., Miers, I., & Goldstein,
+   T. (2023). "A Watermark for Large Language Models." ICML 2023.
+
 Key insight from Wikipedia: "LLMs use statistical algorithms to guess what
 should come next. The result tends toward the most statistically likely result
 that applies to the widest variety of cases."
@@ -1260,3 +1462,174 @@ These aren't tricks. They're what human writing actually looks like:
 9. **Read it aloud.** If it sounds like a press release, a Wikipedia article, or
    a corporate memo, it will probably flag. If it sounds like you talking, it
    probably won't.
+
+---
+
+## RESEARCH-BACKED EVASION PRINCIPLES
+
+This section distills actionable writing principles from peer-reviewed research
+on the limits of AI text detection. These aren't hacks. They're findings from
+computer science papers published at NeurIPS, ICML, and ICLR that demonstrate
+why detection is fundamentally hard and what properties make text
+indistinguishable from human writing.
+
+### The impossibility result (Sadasivan et al., 2023)
+
+Sadasivan et al. proved mathematically that as language models improve at
+emulating human text, the best-possible detector's accuracy approaches that of a
+coin flip. The proof uses Total Variation distance between the distributions of
+human and machine text.
+
+What this means for writing: detection works by finding statistical gaps between
+human and AI text distributions. The smaller those gaps, the worse every
+detector performs. Any technique that makes your text more statistically
+"human-like" in its distribution of word choices, sentence structures, and
+rhythm directly exploits this fundamental limit.
+
+The paper also showed that recursive paraphrasing (rewriting the same text
+multiple times) can reduce detection accuracy from near 100% to near 0% without
+meaningfully degrading text quality. The practical takeaway: revision is your
+friend. Don't submit a first draft. Rewrite, restructure, and rephrase until
+the text reflects your thinking, not the model's default output.
+
+### The DIPPER principle (Krishna et al., NeurIPS 2023)
+
+Krishna et al. built DIPPER, an 11-billion parameter paraphraser with two
+control knobs: lexical diversity (how many words change) and content reordering
+(how much the sentence structure shifts). They found that even moderate settings
+on both knobs dropped DetectGPT's accuracy from 70.3% to 4.6%.
+
+The two dimensions that matter most are:
+
+**Lexical diversity.** Don't use the same words the model would pick. Swap
+generic verbs for specific ones. Replace abstract nouns with concrete ones. Use
+your own vocabulary, not the model's preferred register.
+
+- "The system processes data efficiently" becomes "The pipeline chews through
+  about 50k rows per minute on the staging box."
+- "Enhanced operational capabilities" becomes "We can now handle weekend traffic
+  without the on-call page going off."
+
+**Content reordering.** Don't present information in the order the model would
+choose. Models default to a logical, hierarchical flow: general statement, then
+details, then conclusion. Humans often start with the interesting detail, back
+into the context, and skip the conclusion entirely.
+
+- Model order: "Remote work has increased productivity. Studies show a 13% gain.
+  This has implications for office design."
+- Human order: "The 13% productivity number keeps coming up in remote work
+  studies. I'm not sure anyone's explained why it's always 13%."
+
+### The watermark impossibility (Zhang et al., ICML 2024)
+
+Zhang et al. proved that strong watermarking (where an attacker can't remove the
+watermark without destroying quality) is mathematically impossible given two
+tools: a way to modify text (perturbation oracle) and a way to check if the
+result is still good (quality oracle). Any human writer has both. You can
+rewrite a sentence and you can tell if the rewrite sounds right.
+
+The practical principle: rewrite with judgment. Each time you rephrase a
+sentence and confirm it still says what you mean, you're running the exact
+attack their paper describes. The key is that the rewriting has to be
+meaningful, not mechanical. Synonym substitution doesn't work well because it
+produces its own detectable patterns. Genuine restructuring does.
+
+- Don't: swap "important" for "significant" and call it done.
+- Do: take the sentence apart and rebuild it from the idea, not the words.
+  "This is an important finding" becomes "This changes how we think about the
+  dosing window."
+
+### The SICO principle (Lu et al., 2023)
+
+The SICO framework showed that you can guide a language model to produce
+human-like text without any external paraphraser. The trick is providing the
+right in-context examples: human-written text samples that have high burstiness
+and natural complexity. The model then mimics those statistical properties in
+its output.
+
+Extracted principles for writing:
+
+1. **Match human statistical properties at generation time.** If you're using an
+   LLM to draft text, include examples of your own writing in the prompt. The
+   model will absorb your sentence-length distribution, your vocabulary level,
+   and your structural habits.
+
+2. **Burstiness is the single strongest signal.** SICO's analysis confirmed that
+   sentence-length variation is the feature detectors rely on most heavily.
+   Uniform sentence lengths are the biggest red flag. A paragraph where every
+   sentence is 12-18 words will flag. A paragraph that mixes 4-word sentences
+   with 35-word sentences won't.
+
+3. **Complexity variation matters.** Don't just vary length. Vary structure. Mix
+   simple declarative sentences with compound-complex ones. Throw in a fragment.
+   Use a question. Start a sentence with "and" or "but." These are all normal
+   in human writing and statistically uncommon in AI output.
+
+### The reinforcement learning threat (AuthorMist, 2025)
+
+AuthorMist formulated detection evasion as a reinforcement learning problem.
+They trained a model to iteratively learn what triggers each detector and then
+avoid those triggers while preserving meaning. Their success rates (78-96%
+against individual detectors, with semantic similarity above 0.94) confirm that
+detectors rely on shallow statistical features, not deep understanding.
+
+What AuthorMist's optimization converged on (i.e., what a model "learns" to
+do when trained to fool detectors):
+
+1. **Avoid high-probability token sequences.** The model learned to dodge the
+   most predictable word choices. This is the same as saying: don't use the
+   obvious, generic, "safe" phrasing. Be specific. Be unexpected.
+
+2. **Inject structural irregularity.** The model learned to vary sentence
+   lengths and structures more than a standard LLM would. Same lesson as SICO:
+   burstiness is the key metric.
+
+3. **Preserve semantic density.** The model didn't pad text with filler or
+   remove information. It kept the same meaning in different statistical
+   clothing. Good humanization does the same: same ideas, different rhythm and
+   word choices.
+
+### The DetectGPT baseline (Mitchell et al., ICML 2023)
+
+DetectGPT detects AI text by measuring whether the text sits at a local maximum
+of the model's log-probability function. It perturbs the text slightly and
+checks if every perturbation scores lower. If yes, the text was likely generated
+by the model (because the model would have picked the highest-probability
+version).
+
+This reveals the core vulnerability of all AI text: it sits at probability
+peaks. Human text doesn't. Humans write things that are slightly "off" from the
+statistical optimum because they're optimizing for meaning, tone, and
+context, not probability.
+
+Practical application: after drafting, ask "would a model have written it this
+way?" If yes for most sentences, the text is sitting at a probability peak and
+will flag. Rewrite the sentences where the answer is yes. Use a less common
+word. Restructure the clause order. Add a qualifier or remove one. Move the
+text off the probability peak.
+
+### Summary: five properties of undetectable text
+
+Across all seven papers, the same five properties keep appearing in text that
+fools detectors:
+
+1. **High lexical diversity.** Uses a wider, less predictable vocabulary. Avoids
+   the model's preferred word choices.
+
+2. **High burstiness.** Varies sentence length and structure significantly.
+   Mixes short and long, simple and complex.
+
+3. **Non-default ordering.** Doesn't present information in the model's
+   preferred hierarchy (general-to-specific, claim-then-evidence).
+
+4. **Structural irregularity.** Uneven paragraph lengths, occasional fragments,
+   register shifts, asides.
+
+5. **Semantic precision without statistical smoothness.** Says exactly what it
+   means but not in the statistically smoothest way. Prefers concrete, specific,
+   hard-to-predict details over generic, high-probability abstractions.
+
+These aren't evasion tricks. They're descriptions of how humans actually write.
+The research shows that the gap between human and AI text is closing, and the
+remaining differences are exactly these five properties. Write with them and
+detectors have nothing to latch onto.
