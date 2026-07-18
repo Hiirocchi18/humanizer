@@ -23,4 +23,4 @@ Regression fixtures. A small self-test set guards against reintroducing old mist
 
 ## Installation
 
-Install it as a Claude Agent Skill by placing the humanizer/ folder (containing SKILL.md) in your Claude environment's skills directory. For Claude Code this is commonly ~/.claude/skills/; adjust to your setup. Once installed, the skill activates on its own when you ask Claude to humanize or clean up text.
+Install it as a Claude Agent Skill by placing the humanizer/ folder (containing SKILL.md) in your Claude environment's skills directory. For Claude Code this is commonly ~/.claude/skills/; adjust to your setup. Once installed, the skill activates on its own when you ask Claude to humanize or clean up text. you can also download the skill file and drag-drop it into Claude interface.
