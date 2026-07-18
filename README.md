@@ -1,15 +1,15 @@
-#Humanizer
+# **Humanizer**
 
 A Claude Agent Skill that removes the signs of AI-generated writing and helps produce text in a genuine human voice. It is register-aware: instead of pushing every document toward one "natural" style, it calibrates its rules to the kind of writing in front of it, and it protects meaning — claims, citations, numbers, hedges — from being changed while it edits.
 Based on Wikipedia's Signs of AI writing, maintained by WikiProject AI Cleanup.
 
-##What it does
+## What it does
 
 Detects and rewrites a catalog of 34 documented AI-writing patterns: inflated significance, promotional language, superficial "-ing" analyses, vague attributions, em-dash overuse, rule-of-three padding, overused AI-vocabulary words, negative parallelisms, filler phrases, reflexive recaps, and more.
 Runs in two modes. Rewrite mode cleans up existing text. Always-on mode applies the same standards to new writing as it is produced, rather than as an afterthought.
 
 
-##How it works
+## How it works
 
 The skill is more than a list of banned phrases. Its design is what keeps it from doing damage.
 
@@ -21,6 +21,6 @@ Reusable voice profiles. You can point it at a writing sample or a saved profile
 Regression fixtures. A small self-test set guards against reintroducing old mistakes when the skill is changed.
 
 
-##Installation
+## Installation
 
 Install it as a Claude Agent Skill by placing the humanizer/ folder (containing SKILL.md) in your Claude environment's skills directory. For Claude Code this is commonly ~/.claude/skills/; adjust to your setup. Once installed, the skill activates on its own when you ask Claude to humanize or clean up text.
