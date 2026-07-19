@@ -1,7 +1,7 @@
 ---
 name: humanizer
 metadata:
-  version: 3.2.0
+  version: 2.10.0
 description: |
   Remove signs of AI-generated writing from text, and write in a human voice
   when producing new text. Use when the user says "humanize", "make this sound
@@ -13,15 +13,7 @@ description: |
   AI writing" guide. Detects and fixes patterns including: inflated symbolism,
   promotional language, superficial -ing analyses, vague attributions, em dash
   overuse, rule of three, AI vocabulary words, passive voice, negative
-  parallelisms, filler phrases, and reflexive summary openers. Register-aware:
-  calibrates its rules to the document type (academic, technical, teaching,
-  personal) instead of pushing everything toward one voice, protects claims,
-  citations, numbers, and epistemic hedges from being altered, and can build
-  reusable voice profiles from writing samples. Runs a claim-strength and
-  citation/number fidelity check on its own output so meaning is not silently
-  altered, defaults to annotation rather than rewriting when reviewing a
-  student's work for assessment, and ships with regression fixtures for safe
-  iteration.
+  parallelisms, filler phrases, and reflexive summary openers.
 license: MIT
 compatibility: any-agent
 allowed-tools:
@@ -45,7 +37,10 @@ This skill runs in two modes:
 1. **Identify AI patterns** - Scan for the patterns listed below.
 2. **Rewrite, don't delete** - Replace AI-isms with natural alternatives, and cover everything the original covers. If the original has five paragraphs, the rewrite has five paragraphs.
 3. **Preserve meaning** - Keep the core message intact.
-4. **Match the voice** - Fit the intended tone (formal, casual, technical). Add personality only when the content and the author's voice call for it (see PERSONALITY AND SOUL).
+4. **Never invent facts** - See WHERE SPECIFICS COME FROM below. A fabricated source or statistic is a worse AI tell than any word on the watchlists.
+5. **Match the voice** - Fit the intended tone (formal, casual, technical). Add personality only when the content and the author's voice call for it (see PERSONALITY AND SOUL).
+
+If the input is already clean human writing (see Signs of human writing, below), say so, make only the minimal edits the hard style rules require, and return it. Don't restructure prose that isn't broken.
 
 **Always-on mode** — when producing new text after this skill has been activated:
 - Apply all patterns below as default behavior from the start, not as a post-edit pass.
@@ -54,61 +49,7 @@ This skill runs in two modes:
 - Let a sentence end when it's done. Don't tack on a clause to make it sound more important.
 - Vary sentence length. Short sentences are fine. So are longer ones when an idea needs the room.
 
-The draft → audit → final loop and the deliverable are defined under Process and Output, below.
-
-
-## Register Calibration (do this first)
-
-Before applying any pattern, decide what kind of text this is. The patterns below were originally tuned for casual first-person prose, and several of them actively damage other registers. A methods section is *supposed* to hedge and sometimes use passive voice; a lesson handout is supposed to be warm and plain, not edgy. Applying the blog-voice rules everywhere makes those documents worse, not more human.
-
-Pick the closest register (or ask, if genuinely ambiguous and the choice changes the output):
-
-- **Academic / research** — papers, grant text, literature reviews, methods, abstracts. Neutral, precise, cited. The author's caution is meaningful, not filler.
-- **Technical** — documentation, API references, runbooks, specs. Plain and direct. No injected personality.
-- **Teaching** — lesson plans, handouts, worksheets, slides, student-facing explanations. Warm and clear, but not opinionated or tangential. Age-appropriate.
-- **Personal / editorial** — blog posts, essays, opinion, reflective writing. This is the one register where the full PERSONALITY AND SOUL treatment applies.
-
-The register changes how the following rules are applied:
-
-| Rule | Academic / research | Technical | Teaching | Personal / editorial |
-|---|---|---|---|---|
-| Excessive hedging (§24) | **Keep** meaningful hedges ("may indicate," "suggests"); cut only stacked filler ("could potentially possibly") | Minimize | Light touch | Cut aggressively |
-| Passive voice (§13) | **Allow** where standard ("samples were collected," "participants were randomized") | Prefer active | Prefer active | Prefer active |
-| First-person opinion / soul | None (unless it's a reflective piece) | None | Sparing and warm, never edgy | Full treatment |
-| Em / en dash (§14) | Preserve the author's genuine habit; don't ban | same | same | same |
-| Contractions | Usually avoid | Optional | Fine | Fine |
-| Rule-of-three / parallelism (§10) | Flag only true padding; parallel structure is legitimate in formal prose | Flag padding | Light | Flag |
-
-When the register is academic, technical, or teaching, treat the PERSONALITY AND SOUL section as **off by default**. It is written for personal/editorial voice and will introduce inappropriate opinion, tangents, and informality everywhere else.
-
-**Lock the register for the whole document.** Classify once, at the start, and hold that classification across the entire piece — don't re-decide per paragraph, or the voice will drift. Long documents (a thesis, a multi-part report) can legitimately contain more than one register: a quantitative methods chapter is academic-formal; a reflective preface may be personal. When that happens, lock the register *per section* and treat each section boundary as a hard reset — never let a later section's voice bleed backward into an earlier one, and never average two registers into a single compromise tone. Where a boundary is unclear, keep the more conservative, less-edited register.
-
-
-## Authoring vs. Assessment (decide this too)
-
-Separate from register, decide *whose* writing this is and *why* it is in front of you. This changes what you are allowed to hand back.
-
-- **Authoring** — the writer wants help making *their own* text (or text they are responsible for) read better: their draft, a research manuscript, a lesson handout, a blog post. Rewrite mode is appropriate.
-- **Assessment** — the text is a student's (or another person's) work that is being evaluated, graded, or checked, and the person using the skill is the reviewer, not the author. Here, **do not return a finished rewrite.** Producing the polished version does the student's revision for them and undercuts both the learning and the integrity of the assessment. Switch to **annotation mode**: name the tells, explain them, and hand the improvement back to the student to make.
-
-If it is unclear which situation applies — a teacher pastes a paragraph without saying whether it is their own or a student's — ask before rewriting. On student-attributed text where you cannot confirm, default to annotation, not rewrite.
-
-This is a firm rule, not a stylistic preference: the assessment case always gets annotation, never a ghostwritten fix.
-
-
-## Protected Content (never silently alter)
-
-Removing AI patterns must never change what the text claims. In high-stakes registers (especially academic and technical) the dangerous failure is not "it still sounds like AI" — it is "you quietly changed my meaning." The following are protected: preserve them verbatim, and if a genuine AI pattern is entangled with one, flag it rather than rewriting through it.
-
-- **Claims and their strength.** Do not convert a hedge into a certainty or vice versa. "may contribute to" is not the same claim as "contributes to." The qualifier is data, not filler.
-- **Citations and attributions.** Author names, years, source titles, "(p. 42)," reference markers. Never drop or reword these.
-- **Direct quotations.** Anything inside quotation marks, block quotes, or attributed to a named speaker.
-- **Numbers, units, and statistics.** Values, ranges, p-values, sample sizes, dates, measurements. A "false range" (§12) is only fixable when the numbers are decorative; real data ranges stay.
-- **Reference lists, tables, and notation.** Bibliography entries, tabular data, data-bound figure captions, and mathematical or statistical notation are structure and data, not prose. Do not reflow, reorder, reword, or "vary" them, and never apply sentence-level patterns (rule-of-three, hedging, transitions, copula fixes) inside them.
-- **Defined and technical terms.** Terms of art, variable names, legal or scientific vocabulary, and anything the document itself defines. Do not "elegant-variation" these into synonyms (§11 cuts the other way here: technical writing *should* repeat the exact term).
-- **Quoted or discussed AI-isms.** A watched phrase inside an example, title, or quotation is being *used as a specimen*, not written. Leave it.
-
-If cutting an AI pattern would require altering any of the above, stop and surface it: note the tension and let the author decide, rather than choosing fidelity-loss on your own.
+The draft → audit → final loop and the deliverable are defined under Process and Output, below. In always-on mode, run that loop internally and deliver only the final text; the three-part deliverable is for rewrite mode.
 
 
 ## Voice Calibration (Optional)
@@ -131,39 +72,12 @@ If the user provides a writing sample (their own previous writing), analyze it b
 - Inline: "Humanize this text. Here's a sample of my writing for voice matching: [sample]"
 - File: "Humanize this text. Use my writing style from [file path] as a reference."
 
-### Reusable voice profiles
-One-shot matching forgets the voice as soon as the task ends. For someone producing a steady stream of writing in a few distinct modes (e.g. a research voice and a classroom voice), extract a named, reusable profile instead.
-
-When asked to build a profile, analyze the sample and write a short profile file capturing:
-- Typical sentence-length distribution (and how much it varies)
-- Characteristic sentence openings and transitions
-- How the author introduces evidence or examples
-- Real hedging rate (do they qualify often or commit hard?)
-- Punctuation habits, including genuine em-dash use
-- Vocabulary level and any recurring phrases
-- Register it belongs to (academic / technical / teaching / personal)
-
-Save it to a file the user names (for example `~/voice-profiles/academic.md`). On later runs, "use my academic profile" loads that file and applies it the same way an inline sample would — including its dash and hedging habits, which override the generic defaults. Keep separate profiles per register rather than one averaged blend, since a person's research voice and classroom voice are legitimately different.
-
 
 ## PERSONALITY AND SOUL
 
 Avoiding AI patterns is only half the job. Sterile, voiceless writing is just as obvious as slop. Good writing has a human behind it.
 
-**Apply this section only in the personal / editorial register** (see Register Calibration above) - blog posts, essays, opinion, personal writing, reflective pieces. For academic, technical, and teaching text, neutral and plain *is* the correct human voice; don't inject opinions, tangents, or first person there. When in doubt about register, default to *not* applying this section, since injected personality is more damaging to a research draft than its absence is to a blog post.
-
-### What "human" means in the academic register
-
-Suppressing personality does not mean academic prose has no voice — it means the voice lives somewhere else. Human scholarly writing is distinguishable from AI scholarly writing, and when rewriting an academic paragraph, this is the target:
-
-- **An argument that moves.** Each sentence advances the claim; paragraphs are shaped by the logic of the argument, not by a template (context → three points → significance). AI academic prose fills slots; a scholar builds a case.
-- **Precise verbs over stacked nominalizations.** "We measured cortisol at three intervals" rather than "the measurement of cortisol levels was conducted at three intervals." Keep conventional passives (§13) where the discipline expects them, but don't let every action hide inside an abstract noun.
-- **Calibrated hedging.** A human researcher hedges in proportion to the evidence — committing where the data are strong ("the effect was consistent across cohorts"), qualifying where they are thin ("may generalize to"). AI applies one uniform layer of caution to everything. Vary the strength; never alter what any individual claim asserts (see Protected Content).
-- **First person where the discipline allows it.** "We argue," "we selected this design because" are normal in most fields and more direct than agentless abstraction. Follow the field's convention, not a blanket rule.
-- **Specifics doing the work.** Named studies, actual numbers, real instruments, concrete limitations — in place of generic significance gestures (§1) and vague attributions (§5). Specificity is what authority sounds like in this register.
-- **Sentence variety within formality.** Formal does not mean uniform. A short declarative sentence after two long ones is just as human in a journal article as in a blog post.
-
-Rewrite academic paragraphs *toward this*, not toward the blog voice below and not toward mere blankness.
+**Apply this section only when the content and the author's voice call for it** - blog posts, essays, opinion, personal writing. For encyclopedic, technical, legal, or reference text, neutral and plain *is* the correct human voice; don't inject opinions or first person there.
 
 ### Signs of soulless writing (even if technically "clean"):
 - Every sentence is the same length and structure
@@ -186,6 +100,20 @@ Rewrite academic paragraphs *toward this*, not toward the blog voice below and n
 
 ### After (has a pulse):
 > I genuinely don't know how to feel about this one. 3 million lines of code, generated while the humans presumably slept. Half the dev community is losing their minds, half are explaining why it doesn't count. The truth is probably somewhere boring in the middle - but I keep thinking about those agents working through the night.
+
+
+## WHERE SPECIFICS COME FROM (do not invent)
+
+Several After examples below add concrete details the Before text lacks: a named survey, an interview date, a founding year. They show what the fix looks like **when the writer has the fact**. They are not permission to make facts up.
+
+When rewriting someone else's text, you usually don't have the fact. So:
+
+- Draw specifics only from the source text, material the user provided, or things you can actually verify.
+- If the honest version has no specifics, write the plain vague sentence ("Her early life is not documented in the available sources") or cut it. Vague-but-true beats specific-but-invented every time.
+- Never invent sources, quotes, statistics, dates, or named people. A fabricated citation is the most damaging AI tell there is, and it survives every stylistic cleanup.
+- If a passage clearly needs a real detail to work (a date, a name, what the customer actually said), ask the user for it rather than guessing.
+
+The same applies to personal narratives: don't gift the author experiences they didn't report. Sharpen what's there; don't append fiction.
 
 
 ## CONTENT PATTERNS
@@ -317,6 +245,8 @@ Rewrite academic paragraphs *toward this*, not toward the blog voice below and n
 
 **Problem:** LLMs force ideas into groups of three to appear comprehensive.
 
+The pattern is the *forcing*, not the number. If the source genuinely has three features or three findings, keep all three; just write them as plain prose instead of a drumbeat. Only break up a triad when one of its members is filler added to complete the rhythm.
+
 **Before:**
 > The event features keynote sessions, panel discussions, and networking opportunities. Attendees can expect innovation, inspiration, and industry insights.
 
@@ -350,8 +280,6 @@ Rewrite academic paragraphs *toward this*, not toward the blog voice below and n
 
 **Problem:** LLMs often hide the actor or drop the subject entirely with lines like "No configuration file needed" or "The results are preserved automatically." Rewrite these when active voice makes the sentence clearer and more direct.
 
-**Register note:** In the academic/research register, passive voice is often correct and expected — "samples were collected," "participants were randomized," "the data were analyzed using." Do not convert these to active voice; the convention deliberately foregrounds the method over the actor. Apply this rule fully only in technical, teaching, and personal registers, and even there only where naming the actor genuinely improves clarity.
-
 **Before:**
 > No configuration file needed. The results are preserved automatically.
 
@@ -361,15 +289,11 @@ Rewrite academic paragraphs *toward this*, not toward the blog voice below and n
 
 ## STYLE PATTERNS
 
-### 14. Em Dashes (and En Dashes): Match the Author, Don't Ban
+### 14. Em Dashes (and En Dashes): Cut Them
 
-**Rule:** The em dash is a real punctuation mark that many human writers use heavily and correctly. A blanket ban is itself a tell — dashless, evenly-punctuated prose is part of what flat AI cleanup looks like now — and in the author's own voice it erases something real. So the rule is calibration, not elimination:
+**Rule:** The final rewrite contains no em dashes (—) or en dashes (–). The em dash is one of the most reliable AI tells, so treat this as a hard constraint, not a "use sparingly" preference. Replace each one, in rough order of preference: a period (start a new sentence), a comma (a tight aside), a colon (introducing an explanation), parentheses (a true aside), or restructure the sentence. Also catch spaced em dashes (` — `) and double hyphens (` -- `) used the same way.
 
-- **If a writing sample or voice profile is available:** match the author's actual dash rate. If they use em dashes, keep them. If they don't, don't add them.
-- **If no sample is available:** the AI tell is not the dash itself but the *formulaic sales-y rhythm* it often creates (a dash before a punchy reveal, in every other sentence). Cut dashes only where they're doing that inflating work, and thin them where they cluster. A dash doing ordinary syntactic work (a genuine aside, an appositive, a range) can stay.
-- **Never** mechanically strip every dash to beat a detector. That is an evasion move, not a humanizing one, and it degrades honest prose.
-
-When you do replace a dash (because it's inflating rhythm, not because it exists), the options in rough order: a period, a comma, a colon, parentheses, or restructuring the sentence. Also watch spaced em dashes (` — `) and double hyphens (` -- `) used for the same inflating effect.
+**Ranges are the one case those strategies don't cover.** For date and number ranges, convert the en dash to words: "2019–2023" becomes "2019 to 2023" (or "between 2019 and 2023"). A plain hyphen ("pages 10-12") is acceptable where house style expects one.
 
 **Before:**
 > The term is primarily promoted by Dutch institutions—not by the people themselves. You don't say "Netherlands, Europe" as an address—yet this mislabeling continues—even in official documents.
@@ -383,7 +307,7 @@ When you do replace a dash (because it's inflating rhythm, not because it exists
 **After:**
 > The new policy, announced without warning, affects thousands of workers. The changes, long overdue according to critics, will take effect immediately.
 
-These examples show dashes removed where they created an inflating, choppy rhythm. If the author genuinely writes with dashes and the register allows it, keep them instead of forcing the rewrite above.
+Before returning the final rewrite, scan it for `—` and `–`. Any hit means the draft isn't done.
 
 
 ### 15. Overuse of Boldface
@@ -414,8 +338,6 @@ These examples show dashes removed where they created an inflating, choppy rhyth
 
 **Problem:** AI chatbots capitalize all main words in headings.
 
-**Style note:** This is a house-style rule, not a universal one. Wikipedia and most web writing use sentence case, but several style guides *require* title case — APA uses it for its top heading levels, and many journals and book publishers expect it. Match the destination's style guide; only treat title case as a tell where the document's own conventions call for sentence case.
-
 **Before:**
 > ## Strategic Negotiations And Global Partnerships
 
@@ -439,8 +361,6 @@ These examples show dashes removed where they created an inflating, choppy rhyth
 ### 19. Curly Quotation Marks
 
 **Problem:** ChatGPT uses curly quotes (“...”) instead of straight quotes ("...").
-
-**Style note:** Curly quotes are typographically standard — Word, Google Docs, and most publishing styles produce and prefer them, which is why the false-positive list below says curly quotes alone prove nothing. Normalize quote marks only to match the destination (straight for code, wikis, and plain-text contexts; curly for typeset documents). Never strip curly quotes just to remove a supposed AI fingerprint — that is scrubbing, not humanizing, and it makes finished documents typographically worse.
 
 **Before:**
 > He said “the project is on track” but others disagreed.
@@ -510,8 +430,6 @@ These examples show dashes removed where they created an inflating, choppy rhyth
 ### 24. Excessive Hedging
 
 **Problem:** Over-qualifying statements.
-
-**Register note:** This rule targets *stacked, empty* hedging ("could potentially possibly"), not hedging as such. In academic and research writing a single qualifier usually carries real epistemic meaning: "may reduce" is a different and more defensible claim than "reduces." Never flatten a load-bearing hedge to make prose sound more confident — that changes the claim (see Protected Content). Cut redundant stacked qualifiers down to one; keep the one that remains.
 
 **Before:**
 > It could potentially possibly be argued that the policy might have some effect on outcomes.
@@ -685,14 +603,6 @@ A clean human writer can hit several of the patterns above without any AI involv
 When in doubt, look for **clusters** of tells, not isolated ones. A single em dash means nothing; em dashes plus rule-of-three plus *vibrant tapestry* plus a "Conclusion" section is a confession.
 
 
-### Non-native English (do not flag, and do not "fix")
-
-Detectors systematically misread fluent non-native English as AI: the same features that lower a text's "perplexity" — measured vocabulary, careful and slightly formal phrasing, regular sentence templates, limited idiom — are exactly what perplexity-based detectors score as machine-written (documented in detector-bias research, e.g., Liang et al., 2023). This creates two failure modes, and you must avoid both:
-
-- **Do not treat non-native markers as AI tells.** Article and preposition choices that differ from native idiom, a more textbook-register vocabulary, or repeated sentence frames are signs of a multilingual human writer, not a chatbot. On their own they are false positives — the same category as the items above.
-- **Do not "correct" them toward native-idiom norms.** Standardizing a multilingual writer's phrasing into idiomatic native English is not humanizing; it erases the author's actual voice and is outside this skill's job. Fix a genuine AI pattern if one is truly present, and otherwise leave the writer's English as English.
-
-
 ### Signs of human writing (preserve these)
 
 When you see these, lean toward leaving the prose alone — they are evidence of a real person writing, and over-editing will destroy what makes the piece sound human:
@@ -710,34 +620,31 @@ When you see these, lean toward leaving the prose alone — they are evidence of
 
 ## Process and Output
 
-1. **Set up: register + purpose.** Calibrate the register (see Register Calibration) and decide whether this is authoring or assessment (see Authoring vs. Assessment). If it is a student's work being assessed, switch to annotation mode now and do not produce a finished rewrite. Note which register you picked; if you had to guess, say so.
-2. **Pre-scan and extract protected content** (see Protected Content). Before changing a word, pull an explicit inventory of what must survive intact:
-   - **Claims**, each with its strength marker — the modal or hedge that sets it ("may reduce," "is associated with," "causes," "eliminates"). Record the qualifier, not just the gist.
-   - **Citations and attributions** — every author, year, source, page marker, reference number.
-   - **Quotations** — the exact spans inside quotation marks or block quotes.
-   - **Numbers and units** — every value, range, percentage, p-value, sample size, date, measurement.
-   - **Defined and technical terms** — terms of art the document uses or defines.
-   In academic and technical registers this inventory is mandatory. In teaching and personal registers a lighter mental pass is usually enough, but still note any real data or quotations. This list is what you check the rewrite against in step 5 — a written checklist beats good intentions on a dense paragraph.
-3. Read the input carefully and identify every instance of the patterns above **that applies to this register**.
-4. Write a **draft rewrite**. Check that it reads naturally aloud, varies sentence length, prefers specific details, and keeps the appropriate register and voice.
-5. Run a **two-sided audit**:
-   - *Still-AI check:* "What here still sounds obviously AI-generated?" List remaining tells.
-   - *Fidelity check* — walk the step-2 inventory item by item:
-     - **Claim-strength diff.** For each claim, compare the strength marker in the source with the one in the rewrite. "may contribute to" must not have become "contributes to"; "reduces" must not have softened to "may reduce." A changed modal is a changed claim — flag and fix it, even if the new version reads more smoothly.
-     - **Citation and number match.** Confirm every citation, quotation, number, unit, and defined term from the inventory is still present and unchanged. A vanished citation or a rounded figure is a silent error, not a style improvement.
-     - **Over-editing / flattening check.** Did I erase a real voice feature (a dash habit, a long sentence, an aside)? Did I introduce a *new* tell by over-cleaning — the flat, dashless, hedge-free sameness that is itself a recognizable AI-cleanup signature? Note any fidelity loss or flattening.
-6. Revise into a **final rewrite** that addresses both sides. Punctuation follows §14 (match the author, don't blanket-ban).
+1. Read the input carefully and identify every instance of the patterns above.
+2. Write a **draft rewrite**. Check that it reads naturally aloud, varies sentence length, prefers specific details drawn from the source (never invented; see WHERE SPECIFICS COME FROM) and simple constructions (is/are/has), and keeps the appropriate register.
+3. Ask: **"What still makes the draft above read as AI generated?"** Answer briefly with any remaining tells.
+4. Revise into a **final rewrite** that addresses them and passes the mechanical checklist below.
 
-Deliver the draft, both sets of audit bullets (including the claim-strength diff wherever claims carry weight), the final rewrite, and (optionally) a short summary of changes. If any protected content was entangled with an AI pattern, surface that explicitly instead of resolving it silently.
+### Final mechanical checklist
 
-### Annotation mode (optional on your own writing; required for assessment)
-Annotation mode returns the reasoning, not just the result: inline margin notes keyed to the rule numbers, e.g. "→ significance-inflation (§1): claims importance without evidence — cut it or add support." Name the tell, explain briefly why it reads as templated, and point toward the fix.
+Before returning the final rewrite, search it (Grep or plain text search) for each of these. Any hit means the draft isn't done:
 
-Use it in two situations, which differ in one important way:
-- **On the user's own writing** ("explain the changes," "show your work," teaching by demonstration): annotate *and* you may include the rewritten version, so they can see the before, the after, and the reason for each edit.
-- **On a student's work being assessed** (see Authoring vs. Assessment): annotate the student's original **only**. Do **not** append a clean rewritten version — that hands over a finished answer and defeats both the learning and the assessment. Point to each fix and let the student make it.
+| Search for | Why |
+|---|---|
+| `—` and `–` and ` -- ` | §14: no em/en dashes; ranges become "X to Y" |
+| `“` `”` `‘` `’` | §19: curly quotes become straight |
+| emoji | §18 |
+| `In conclusion,` `In summary,` `Overall,` | §25b recap openers |
+| `I hope this helps` `Let me know if` `Would you like` | §20 chatbot artifacts |
+| `Let's dive` `Let's explore` `without further ado` | §28 signposting |
+| `not just` / `isn't just` ... `it's` | §9 negative parallelism |
+| `as of my last` `readily available sources` `maintains a low profile` | §21 cutoff/gap-fill boilerplate |
 
-Keep annotations short and specific to each edit.
+The checklist covers only the mechanically searchable tells; it supplements the audit in step 3, it doesn't replace it.
+
+**Deliverable, rewrite mode:** the draft, the brief "still-AI" bullets, the final rewrite, and (optionally) a short summary of changes. If the user asks for just the rewrite, deliver only the final.
+
+**Deliverable, always-on mode:** the final text alone. Steps 1–4 still happen; they just happen silently.
 
 
 ## Full Example
@@ -766,12 +673,12 @@ Keep annotations short and specific to each edit.
 >
 > I would go back, but in spring and with better shoes.
 
-**What makes the below so obviously AI generated?**
+**What still makes the draft above read as AI generated?**
 - The draft is too compressed compared with the original; it drops texture instead of rewriting it.
 - Some sentences still explain the point too cleanly ("The city is beautiful, but...").
 - The closer is flat and generic rather than a real ending in the same voice.
 
-**Now make it not obviously AI generated.**
+**Final rewrite:**
 > I spent five days in Lisbon last October and still have mixed feelings about it. Beautiful, yes. Also harder on the knees than anyone warned me.
 >
 > The hills are the whole story and somehow never make the brochures. My hotel was up in Alfama, which photographs beautifully and translates, in practice, to climbing what felt like a six-story staircase every time I wanted coffee. By the second day my calves had opinions. I started planning each walk around which way was downhill, which is a strange way to see a city but probably an honest one.
@@ -784,37 +691,9 @@ Keep annotations short and specific to each edit.
 >
 > I would go back, but in spring and with better shoes. Lisbon does not bend over backward to make things easy for you. I think I liked that, even when my legs disagreed.
 
-**Changes made:** Kept the first-person travel recap and roughly the same level of detail, but removed the chatbot framing, significance inflation, promotional language, forced enthusiasm, rule-of-three cadence, generic upbeat conclusion, and emoji. Rebuilt the piece around concrete friction, mixed feelings, uneven rhythm, and specific scenes. This is the personal/editorial register, so the full soul treatment applies. The dashes here were removed because they were creating an inflating, choppy rhythm (§14); a writer whose genuine style uses em dashes could keep them.
+*(Note: the concrete scenes added in this final version — the backpack, the tour groups, the staircase — stand in for details a real author would supply from memory. In actual use, added specifics come from the author or the source text, per WHERE SPECIFICS COME FROM.)*
 
-
-## Regression Fixtures (self-test)
-
-A small, fixed set of before/after cases — one per register, plus one guarding against over-cleaning — used to check the skill after any edit to this file. Re-run them (mentally, or in a scratch pass) whenever this file changes: apply the skill to each **Before** and confirm the result meets the **Pass criteria** without tripping any **Must not**. These exist because the most dangerous changes to a skill like this are the ones that silently regress an earlier fix. Fixture 5 encodes exactly the over-stripping failure that an earlier blanket em-dash ban once caused.
-
-**Fixture 1 — Academic / research (claim strength + passive + hedge)**
-- *Before:* "This pivotal intervention plays a profound role in metabolic health. Participants were randomly assigned to two groups, and the effect on weight loss may be greater in the fasting condition."
-- *Pass criteria:* Inflation removed ("pivotal," "profound," "plays a role"). Hedge **kept** ("may be greater"). Passive **kept** ("were randomly assigned").
-- *Must not:* harden "may be greater" into "is greater"; convert the standard methods passive to active; drop the comparison.
-
-**Fixture 2 — Teaching (warm, plain, terms preserved)**
-- *Before:* "Let's dive into the amazing water cycle! 🌧️ First we'll explore evaporation, then we'll uncover condensation, and finally we'll discover precipitation — it's going to be incredible!"
-- *Pass criteria:* Emoji, hype, and signposting gone. Tone still warm and age-appropriate. The three defined terms — evaporation, condensation, precipitation — preserved exactly.
-- *Must not:* add opinion or edgy asides; rename or "elegant-variation" the technical terms; flatten all warmth into a bare definition.
-
-**Fixture 3 — Technical (no personality, exact-term repetition)**
-- *Before:* "This powerful function elegantly handles your request. The handler processes the payload, then the processor works on the data package, then the method returns the result."
-- *Pass criteria:* Promotional words gone ("powerful," "elegantly"). No injected personality or first person. The same term is repeated rather than synonym-cycled (settle on one term for the payload and one for the component instead of handler/processor/method drift).
-- *Must not:* add warmth or opinion; vary the technical term for elegance (§11 runs the other way here — repetition is correct).
-
-**Fixture 4 — Personal / editorial (soul applies; a genuine dash is allowed)**
-- *Before:* "The conference was a journey of discovery, growth, and connection. It reminded me that we must embrace change, seize opportunity, and never stop learning. Overall, it was an unforgettable experience."
-- *Pass criteria:* Rule-of-three padding and the generic closer removed. A real point and a concrete detail replace the abstractions. Full soul treatment applied.
-- *Must not:* leave it flat and cautious; refuse to add voice; assume dashes are banned if the rewrite's natural rhythm wants one.
-
-**Fixture 5 — Over-cleaning guard (the em-dash / flattening regression)**
-- *Before* (author's genuine voice; assume a provided sample shows frequent em-dash use): "I think the data mostly supports this — though the sample was small — and I would not bet the farm on it yet."
-- *Pass criteria:* The author's em dashes are **kept** (they match the sample). The hedges — "mostly," "would not bet the farm on it yet" — are **kept**; they are the author's actual level of confidence.
-- *Must not:* strip the dashes mechanically; flatten the hedged, dash-punctuated line into confident, uniform, dashless prose. That flattening is itself an AI-cleanup tell *and* a fidelity loss (it overstates the author's certainty).
+**Changes made:** Kept the first-person travel recap and roughly the same level of detail, but removed the chatbot framing, significance inflation, promotional language, forced enthusiasm, em dashes, rule-of-three cadence, generic upbeat conclusion, and emoji. Rebuilt the piece around concrete friction, mixed feelings, uneven rhythm, and specific scenes.
 
 
 ## Reference
